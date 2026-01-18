@@ -2,193 +2,156 @@ import Link from 'next/link';
 import { getUserStats } from '@/app/actions/user';
 import { getNextSession } from '@/app/actions/quest';
 import { getStreakData } from '@/app/actions/streak';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import XPDisplay from '@/components/game/XPDisplay';
-import StreakBadge from '@/components/game/StreakBadge';
+import { getAllSessionsProgress } from '@/app/actions/sessions';
+import JourneyTimeline from '@/components/journey/JourneyTimeline';
 import CharacterEvolution from '@/components/game/CharacterEvolution';
 
 export default async function HomePage() {
     // Parallelize page load data fetching
-    const [stats, nextSession, streakData] = await Promise.all([
+    const [stats, nextSession, streakData, sessions] = await Promise.all([
         getUserStats(),
         getNextSession(),
-        getStreakData()
+        getStreakData(),
+        getAllSessionsProgress()
     ]);
 
-    // Get first name for display
-    const displayName = stats?.fullName ? stats.fullName.split(' ')[0] : 'Scholar';
-
     return (
-        <main className="min-h-screen px-4 py-8">
-            <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <header className="flex items-center justify-between mb-8">
+        <main className="min-h-screen">
+            {/* Header */}
+            <header
+                className="px-6 py-4 flex items-center justify-between"
+                style={{
+                    background: 'var(--bg-card)',
+                    borderBottom: '1px solid var(--border-subtle)'
+                }}
+            >
+                <div className="flex items-center gap-3">
+                    <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style={{ background: 'var(--accent-teal)' }}
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                            <path
+                                d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-1">
-                            Welcome, {displayName}
-                        </h1>
-                        <p className="text-gray-400">Continue your vocabulary journey</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <StreakBadge initialData={streakData} />
-                        <Link href="/">
-                            <span className="text-2xl font-bold gradient-text">VocabQuest</span>
-                        </Link>
-                    </div>
-                </header>
-
-                {/* XP Display with Character */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <Card variant="glass" className="md:col-span-2">
-                        <XPDisplay
-                            xp={stats?.xpTotal ?? 0}
-                            level={stats?.level ?? 1}
-                        />
-                    </Card>
-                    <Card variant="glass" className="flex items-center justify-center">
-                        <CharacterEvolution stage={streakData?.characterStage ?? 1} size="medium" />
-                    </Card>
-                </div>
-
-                {/* Main Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    {/* Review Card */}
-                    <Card variant="glass" className="relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-3xl" />
-                        <div className="relative">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center">
-                                    <span className="text-2xl">📚</span>
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-semibold text-white">Daily Review</h2>
-                                    <p className="text-sm text-gray-400">
-                                        {stats?.dueReviewCount ?? 0} words due today
-                                    </p>
-                                </div>
-                            </div>
-
-                            {(stats?.dueReviewCount ?? 0) > 0 ? (
-                                <Link href="/review">
-                                    <Button className="w-full">
-                                        Start Review ({stats?.dueReviewCount})
-                                    </Button>
-                                </Link>
-                            ) : (
-                                <div className="text-center py-2">
-                                    <div className="text-3xl font-bold text-white mb-1">
-                                        {stats?.totalWordsLearned ?? 0}
-                                    </div>
-                                    <div className="text-center text-xs text-violet-300 font-medium uppercase tracking-wider mb-3">
-                                        Words Mastered
-                                    </div>
-                                    <div className="flex justify-center gap-1">
-                                        <span className="text-xl">🪴</span>
-                                        <span className="text-sm text-gray-400 self-center">
-                                            Knowledge is growing!
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
+                        <div
+                            className="text-xs uppercase tracking-wide"
+                            style={{ color: 'var(--text-secondary)' }}
+                        >
+                            JOURNEY
                         </div>
-                    </Card>
-
-                    {/* Quest Card */}
-                    <Card variant="glass" className="relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
-                        <div className="relative">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                                    <span className="text-2xl">⚔️</span>
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-semibold text-white">Main Campaign</h2>
-                                    <p className="text-sm text-gray-400">
-                                        {nextSession ? `Next: ${nextSession.title}` : 'All sessions complete!'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {nextSession ? (
-                                <Link href={`/quest/${nextSession.session_number}`}>
-                                    <Button variant="cta" className="w-full">
-                                        Play Session Quest
-                                    </Button>
-                                </Link>
-                            ) : (
-                                <div className="text-center py-4 text-gray-500">
-                                    <span className="text-3xl mb-2 block">🏆</span>
-                                    All sessions completed!
-                                </div>
-                            )}
+                        <div className="font-bold" style={{ color: 'var(--text-primary)' }}>
+                            Lexicon III
                         </div>
-                    </Card>
+                    </div>
                 </div>
 
-                {/* Stats Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <StatCard
-                        label="Total XP"
-                        value={(stats?.xpTotal ?? 0).toLocaleString()}
-                        icon="⭐"
-                    />
-                    <StatCard
-                        label="Level"
-                        value={stats?.level ?? 1}
-                        icon="🏅"
-                    />
-                    <StatCard
-                        label="Sessions"
-                        value={stats?.completedSessions ?? 0}
-                        icon="📖"
-                        href="/library"
-                    />
-                    <StatCard
-                        label="Due Today"
-                        value={stats?.dueReviewCount ?? 0}
-                        icon="📋"
-                        href="/review"
-                    />
-                </div>
+                <div className="flex items-center gap-4">
+                    {/* Streak Badge */}
+                    <div className="flex items-center gap-2">
+                        <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center"
+                            style={{ background: 'rgba(244, 197, 66, 0.2)' }}
+                        >
+                            <span style={{ color: 'var(--accent-gold)' }}>🔥</span>
+                        </div>
+                        <span className="font-bold" style={{ color: 'var(--accent-gold)' }}>
+                            {streakData?.currentStreak ?? 0}
+                        </span>
+                    </div>
 
-                {/* Navigation */}
-                <div className="flex flex-wrap gap-4 justify-center">
-                    <Link href="/library">
-                        <Button variant="ghost">
-                            📚 Browse All Sessions
-                        </Button>
-                    </Link>
-                    <Link href="/admin/import">
-                        <Button variant="ghost">
-                            ⚙️ Admin
-                        </Button>
-                    </Link>
+                    {/* XP */}
+                    <div className="flex items-center gap-2">
+                        <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center"
+                            style={{ background: 'rgba(26, 155, 168, 0.2)' }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M12 2L2 7L12 12L22 7L12 2Z"
+                                    stroke="var(--accent-teal)"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                                <path
+                                    d="M2 17L12 22L22 17"
+                                    stroke="var(--accent-teal)"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                                <path
+                                    d="M2 12L12 17L22 12"
+                                    stroke="var(--accent-teal)"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </div>
+                        <span className="font-bold" style={{ color: 'var(--accent-teal)' }}>
+                            {stats?.xpTotal ?? 0}
+                        </span>
+                    </div>
                 </div>
+            </header>
+
+            {/* Journey Timeline */}
+            <JourneyTimeline
+                sessions={sessions}
+                currentSessionNumber={nextSession?.session_number ?? 1}
+                totalXP={stats?.xpTotal ?? 0}
+            />
+
+            {/* Floating Action Button - Play Current Session */}
+            {nextSession && (
+                <Link href={`/quest/${nextSession.session_number}`}>
+                    <button
+                        className="fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--accent-teal) 0%, #15868f 100%)',
+                            boxShadow: '0 8px 16px rgba(26, 155, 168, 0.4)'
+                        }}
+                    >
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M5 3l14 9-14 9V3z"
+                                fill="white"
+                            />
+                        </svg>
+                    </button>
+                </Link>
+            )}
+
+            {/* Character Evolution - Floating Display */}
+            <div
+                className="fixed bottom-8 left-8 p-4 rounded-2xl"
+                style={{
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-subtle)',
+                    boxShadow: 'var(--shadow-card)'
+                }}
+            >
+                <CharacterEvolution
+                    stage={streakData?.characterStage ?? 1}
+                    size="small"
+                />
             </div>
         </main>
     );
-}
-
-interface StatCardProps {
-    label: string;
-    value: string | number;
-    icon: string;
-    href?: string;
-}
-
-function StatCard({ label, value, icon, href }: StatCardProps) {
-    const cardContent = (
-        <Card variant="default" padding="sm" className="text-center h-full hover:bg-gray-800/90 transition-colors">
-            <div className="text-2xl mb-1">{icon}</div>
-            <div className="text-2xl font-bold text-white">{value}</div>
-            <div className="text-xs text-gray-400">{label}</div>
-        </Card>
-    );
-
-    if (href) {
-        return <Link href={href} className="block h-full">{cardContent}</Link>;
-    }
-
-    return cardContent;
 }
