@@ -171,6 +171,7 @@ export interface UserStats {
     avatarUrl?: string;
     totalWordsLearned?: number;
     currentStreak?: number;
+    joinedAt?: string;
 }
 
 // ============================================

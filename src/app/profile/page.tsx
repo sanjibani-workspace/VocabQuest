@@ -14,6 +14,8 @@ interface ProfileStats {
     streak: number;
     wordsLearned: number;
     rank: number;
+    fullName?: string;
+    joinedAt?: string;
 }
 
 export default function ProfilePage() {
@@ -45,7 +47,9 @@ export default function ProfilePage() {
                     level: userStats?.level || 1,
                     streak: userStats?.currentStreak || 0,
                     wordsLearned: 42, // Placeholder or need a new action to count user_word_state
-                    rank: 1 // Placeholder unless we query leaderboard
+                    rank: 1, // Placeholder unless we query leaderboard
+                    fullName: userStats?.fullName,
+                    joinedAt: userStats?.joinedAt
                 });
 
             } catch (error) {
@@ -92,14 +96,14 @@ export default function ProfilePage() {
 
                         <div>
                             <h1 className="text-2xl font-bold text-white mb-1">
-                                {userEmail.split('@')[0]}
+                                {stats?.fullName || userEmail.split('@')[0]}
                             </h1>
                             <div className="flex items-center gap-2 text-teal-200/80 text-sm font-medium">
                                 <span className="bg-teal-950/50 px-2 py-0.5 rounded border border-teal-800">
                                     Level {stats?.level} Scholar
                                 </span>
                                 <span>•</span>
-                                <span>Joined 2024</span>
+                                <span>Joined {stats?.joinedAt ? new Date(stats.joinedAt).getFullYear() : '2025'}</span>
                             </div>
                         </div>
                     </div>
