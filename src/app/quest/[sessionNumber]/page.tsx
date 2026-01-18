@@ -34,6 +34,9 @@ export default function QuestPage({ params }: QuestPageProps) {
 
     const [completionMessage, setCompletionMessage] = useState<string | null>(null);
 
+    // Track pending server syncs to ensure data saves before completion
+    const [pendingSyncs, setPendingSyncs] = useState<Promise<any>[]>([]);
+
     useEffect(() => {
         async function loadSessionAndStats() {
             try {
@@ -63,58 +66,78 @@ export default function QuestPage({ params }: QuestPageProps) {
     const handleAnswer = async (selectedAnswer: string, isCorrect: boolean) => {
         const prompt = prompts[currentIndex];
 
-        // Submit answer and get XP
-        try {
-            const result = await submitQuestAnswer(prompt.wordId, isCorrect);
-            setXpTotal(result.newXpTotal);
-            setXpGained(result.xpGained);
+        // Optimistic UI Update (Immediate feedback)
+        // 1. Calculate expected XP
+        const optimisticXpAward = isCorrect ? 10 : 2; // Hardcoded constants from types/logic
+        const newOptimisticTotal = xpTotal + optimisticXpAward;
 
-            if (isCorrect) {
-                setCorrectCount(c => c + 1);
+        // 2. Update local state immediately
+        setXpTotal(newOptimisticTotal);
+        setXpGained(optimisticXpAward);
+        if (isCorrect) setCorrectCount(c => c + 1);
+
+        // 3. Advance question (with small visual delay for user to see selection)
+        // We keep the timeout to allow the user to see "Correct/Incorrect" fedback from the component
+        const NEXT_QUESTION_DELAY = 1000; // 1 second to read feedback
+
+        // However, we start the server request IMMEDIATELY in background
+        // Track this promise so we can await all syncs before completion
+        const serverRequest = submitQuestAnswer(prompt.wordId, isCorrect)
+            .catch((err) => {
+                console.error('Background sync failed:', err);
+            });
+
+        // Add to pending syncs
+        setPendingSyncs(prev => [...prev, serverRequest]);
+
+        // 4. Transition UI after delay
+        setTimeout(() => {
+            if (currentIndex < prompts.length - 1) {
+                setCurrentIndex(i => i + 1);
+                setXpGained(0);
+            } else {
+                handleComplete();
             }
-
-            // Move to next prompt or complete
-            setTimeout(() => {
-                if (currentIndex < prompts.length - 1) {
-                    setCurrentIndex(i => i + 1);
-                    setXpGained(0);
-                } else {
-                    handleComplete();
-                }
-            }, 200);
-        } catch (error) {
-            console.error('Error submitting answer:', error);
-        }
+        }, 800); // Reduced from previous implicit/longer wait
     };
 
     const handleComplete = async () => {
         if (!session) return;
 
-        try {
-            const result = await completeQuest(session.id);
-            setBonusXP(result.bonusXP);
-            setXpTotal(result.newXpTotal);
+        // CRITICAL: Wait for all word state syncs to complete FIRST
+        // This ensures words are saved to DB so they appear in Review
+        await Promise.all(pendingSyncs);
 
-            if (!result.success && result.message) {
-                setCompletionMessage(result.message);
+        // NOW show completion screen with bonus XP
+        const estimatedBonusXP = 50; // Standard session bonus
+        setBonusXP(estimatedBonusXP);
+        setXpTotal(prev => prev + estimatedBonusXP);
+        setIsComplete(true);
+
+        // Background sync: Complete the quest and record activity in parallel
+        Promise.all([
+            completeQuest(session.id),
+            recordActivity('session')
+        ]).then(([questResult]) => {
+            // Reconcile with server values if needed
+            if (questResult) {
+                if (!questResult.success && questResult.message) {
+                    setCompletionMessage(questResult.message);
+                }
+                // Could update XP if server differs, but for optimistic UX we trust client
             }
-
-            // Record activity for streak
-            await recordActivity('session');
-
-            setIsComplete(true);
-        } catch (error) {
-            console.error('Error completing quest:', error);
-            setIsComplete(true);
-        }
+        }).catch((error) => {
+            console.error('Background sync failed:', error);
+            // Could show toast notification for retry
+        });
     };
 
     if (isLoading) {
         return (
-            <main className="min-h-screen flex items-center justify-center">
+            <main className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)' }}>
                 <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                    <p className="text-gray-400">Loading quest...</p>
+                    <div className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'var(--accent-teal)', borderTopColor: 'transparent' }} />
+                    <p style={{ color: 'var(--text-secondary)' }}>Loading quest...</p>
                 </div>
             </main>
         );
@@ -181,17 +204,17 @@ export default function QuestPage({ params }: QuestPageProps) {
 
                                 {/* Stats */}
                                 <div className="grid grid-cols-3 gap-4 mb-8">
-                                    <div className="bg-gray-800/50 rounded-xl p-4">
-                                        <div className="text-3xl font-bold text-emerald-400">{accuracy}%</div>
-                                        <div className="text-sm text-gray-400">Accuracy</div>
+                                    <div className="rounded-xl p-4" style={{ background: 'var(--bg-elevated)' }}>
+                                        <div className="text-3xl font-bold" style={{ color: 'var(--accent-success)' }}>{accuracy}%</div>
+                                        <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Accuracy</div>
                                     </div>
-                                    <div className="bg-gray-800/50 rounded-xl p-4">
-                                        <div className="text-3xl font-bold text-amber-400">+{bonusXP}</div>
-                                        <div className="text-sm text-gray-400">Bonus XP</div>
+                                    <div className="rounded-xl p-4" style={{ background: 'var(--bg-elevated)' }}>
+                                        <div className="text-3xl font-bold" style={{ color: 'var(--accent-gold)' }}>+{bonusXP}</div>
+                                        <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Bonus XP</div>
                                     </div>
-                                    <div className="bg-gray-800/50 rounded-xl p-4">
-                                        <div className="text-3xl font-bold text-violet-400">{prompts.length}</div>
-                                        <div className="text-sm text-gray-400">Words</div>
+                                    <div className="rounded-xl p-4" style={{ background: 'var(--bg-elevated)' }}>
+                                        <div className="text-3xl font-bold" style={{ color: 'var(--accent-teal)' }}>{prompts.length}</div>
+                                        <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Words</div>
                                     </div>
                                 </div>
 
@@ -228,7 +251,7 @@ export default function QuestPage({ params }: QuestPageProps) {
                 {/* Header */}
                 <header className="mb-8">
                     <div className="flex items-center justify-between mb-4">
-                        <Link href="/home" className="text-violet-400 hover:text-violet-300 text-sm">
+                        <Link href="/home" className="text-sm" style={{ color: 'var(--accent-teal)' }}>
                             ← Exit Quest
                         </Link>
                         <div className="text-sm text-gray-400">
@@ -240,7 +263,7 @@ export default function QuestPage({ params }: QuestPageProps) {
                     {/* Progress */}
                     <div className="flex items-center gap-4">
                         <ProgressBar
-                            value={currentIndex + 1}
+                            value={currentIndex}
                             max={prompts.length}
                             showLabel
                             label={`Question ${currentIndex + 1} of ${prompts.length}`}

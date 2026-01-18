@@ -26,10 +26,10 @@ export default function ProgressBar({
     };
 
     const variantStyles = {
-        default: 'bg-gradient-to-r from-violet-600 to-indigo-600',
-        success: 'bg-gradient-to-r from-emerald-500 to-green-500',
-        warning: 'bg-gradient-to-r from-amber-500 to-orange-500',
-        xp: 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500',
+        default: 'bg-gradient-to-r from-[#1a9ba8] to-[#2dd4bf]',
+        success: 'bg-gradient-to-r from-[#2dd4bf] to-[#10b981]',
+        warning: 'bg-gradient-to-r from-[#f4c542] to-[#f59e0b]',
+        xp: 'bg-gradient-to-r from-[#f4c542] via-[#fbbf24] to-[#f59e0b]',
     };
 
     return (

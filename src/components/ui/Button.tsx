@@ -18,21 +18,21 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         const variantStyles = {
             primary: `
-        bg-gradient-to-r from-violet-600 to-indigo-600
-        hover:from-violet-500 hover:to-indigo-500
-        text-white shadow-lg shadow-violet-500/25
-        focus:ring-violet-500
+        bg-gradient-to-r from-[#1a9ba8] to-[#2dd4bf]
+        hover:from-[#15868f] hover:to-[#20b2aa]
+        text-white shadow-lg shadow-[#1a9ba8]/25
+        focus:ring-[#1a9ba8]
       `,
             secondary: `
-        bg-gradient-to-r from-gray-700 to-gray-800
-        hover:from-gray-600 hover:to-gray-700
-        text-white shadow-lg shadow-gray-900/50
-        focus:ring-gray-500
+        bg-gradient-to-r from-[#1e4555] to-[#265366]
+        hover:from-[#163642] hover:to-[#1e4555]
+        text-white shadow-lg shadow-[#0f2830]/50
+        focus:ring-[#1a9ba8]
       `,
             outline: `
-        border-2 border-violet-500 text-violet-400
-        hover:bg-violet-500/10
-        focus:ring-violet-500
+        border-2 border-[#1a9ba8] text-[#1a9ba8]
+        hover:bg-[#1a9ba8]/10
+        focus:ring-[#1a9ba8]
       `,
             ghost: `
         text-gray-300 hover:text-white

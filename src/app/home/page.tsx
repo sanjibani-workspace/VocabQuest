@@ -52,10 +52,10 @@ export default async function HomePage() {
                             className="text-xs uppercase tracking-wide"
                             style={{ color: 'var(--text-secondary)' }}
                         >
-                            JOURNEY
+                            VOCABQUEST
                         </div>
                         <div className="font-bold" style={{ color: 'var(--text-primary)' }}>
-                            Lexicon III
+                            {stats?.fullName || 'Scholar'}
                         </div>
                     </div>
                 </div>
@@ -118,25 +118,7 @@ export default async function HomePage() {
                 totalXP={stats?.xpTotal ?? 0}
             />
 
-            {/* Floating Action Button - Play Current Session */}
-            {nextSession && (
-                <Link href={`/quest/${nextSession.session_number}`}>
-                    <button
-                        className="fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
-                        style={{
-                            background: 'linear-gradient(135deg, var(--accent-teal) 0%, #15868f 100%)',
-                            boxShadow: '0 8px 16px rgba(26, 155, 168, 0.4)'
-                        }}
-                    >
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                            <path
-                                d="M5 3l14 9-14 9V3z"
-                                fill="white"
-                            />
-                        </svg>
-                    </button>
-                </Link>
-            )}
+
 
             {/* Character Evolution - Floating Display */}
             <div

@@ -39,23 +39,26 @@ export async function getSessionByNumber(sessionNumber: number): Promise<{
             return null;
         }
 
-        // 2. Get Words for Session
-        const { data: words, error: wordsError } = await supabase
-            .from('words')
-            .select('*')
-            .eq('session_id', session.id);
+        // 2. Fetch Words and Exercises in PARALLEL (performance optimization)
+        const [wordsResult, exerciseResult] = await Promise.all([
+            supabase
+                .from('words')
+                .select('*')
+                .eq('session_id', session.id),
+            supabase
+                .from('exercise_items')
+                .select('*')
+                .eq('session_id', session.id)
+                .order('order_index')
+        ]);
+
+        const { data: words, error: wordsError } = wordsResult;
+        const { data: exerciseItems, error: exerciseError } = exerciseResult;
 
         if (wordsError) {
             console.error('Error fetching words:', wordsError);
             return null;
         }
-
-        // 3. Get Exercises/Prompts
-        const { data: exerciseItems, error: exerciseError } = await supabase
-            .from('exercise_items')
-            .select('*')
-            .eq('session_id', session.id)
-            .order('order_index');
 
         if (exerciseError) {
             console.error('Error fetching exercises:', exerciseError);
@@ -126,32 +129,35 @@ export async function submitQuestAnswer(
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // XP
+    // Calculate XP first
     const xpGained = isCorrect ? XP_AWARDS.CORRECT_ANSWER : XP_AWARDS.INCORRECT_ANSWER;
-    const profile = await updateXP(xpGained);
 
-    if (user) {
-        // Init Word State if needed
-        const { data: existingState } = await supabase
+    // XP update and word state check in PARALLEL (performance optimization)
+    const [profile, wordStateResult] = await Promise.all([
+        updateXP(xpGained),
+        user ? supabase
             .from('user_word_state')
             .select('*')
             .eq('user_id', user.id)
             .eq('word_id', wordId)
-            .single();
+            .single() : Promise.resolve({ data: null })
+    ]);
 
+    const existingState = wordStateResult.data;
+
+    if (user) {
         if (!existingState) {
             // Initial SM-2 State
-            // If Correct: Interval 1 day
-            // If Incorrect: Interval 0
-            const initialInterval = isCorrect ? 1 : 0;
-            const dueAt = new Date();
-            if (isCorrect) dueAt.setDate(dueAt.getDate() + 1);
+            // For FIRST encounter, make word immediately available for review
+            // This matches user expectation that "learned words" can be reviewed right away
+            // The SM-2 scheduling kicks in after the first review
+            const dueAt = new Date(); // Always NOW for first encounter
 
             await supabase.from('user_word_state').insert({
                 user_id: user.id,
                 word_id: wordId,
                 repetitions: isCorrect ? 1 : 0,
-                interval_days: initialInterval,
+                interval_days: 0, // Will be set properly after first review
                 ease_factor: 2.5,
                 due_at: dueAt.toISOString(),
                 lapses: isCorrect ? 0 : 1

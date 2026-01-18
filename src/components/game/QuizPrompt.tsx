@@ -37,7 +37,7 @@ export default function QuizPrompt({ prompt, onAnswer, disabled }: QuizPromptPro
                 return 'border-emerald-500 bg-emerald-500/20 text-emerald-300';
             }
             return selectedAnswer === choice
-                ? 'border-violet-500 bg-violet-500/20'
+                ? 'border-[#1a9ba8] bg-[#1a9ba8]/20'
                 : 'border-gray-600 hover:border-gray-500 hover:bg-gray-700/50';
         }
 
@@ -53,9 +53,8 @@ export default function QuizPrompt({ prompt, onAnswer, disabled }: QuizPromptPro
             <div className="flex items-center gap-2 mb-4">
                 <span className={`
           px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide
-          ${prompt.type === 'mcq_definition'
-                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        ? 'bg-[#1a9ba8]/20 text-[#2dd4bf] border border-[#1a9ba8]/30'
+                        : 'bg-[#f4c542]/20 text-[#f4c542] border border-[#f4c542]/30'
                     }
         `}>
                     {prompt.type === 'mcq_definition' ? 'Multiple Choice' : 'Fill in the Blank'}

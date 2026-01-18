@@ -13,7 +13,7 @@ export async function getAllSessionsProgress() {
     // Get all sessions
     const { data: sessions, error: sessionsError } = await supabase
         .from('sessions')
-        .select('session_number, title, description')
+        .select('session_number, title')
         .order('session_number');
 
     if (sessionsError) {
@@ -23,15 +23,20 @@ export async function getAllSessionsProgress() {
     // Get completed sessions for this user
     const { data: completedSessions, error: progressError } = await supabase
         .from('user_session_progress')
-        .select('session_id, session_number, completion_date')
+        .select('session_id, sessions(session_number)')
         .eq('user_id', user.id)
-        .not('completion_date', 'is', null);
+        .not('completed_at', 'is', null);
 
     if (progressError) {
         throw progressError;
     }
 
-    const completedSet = new Set(completedSessions?.map(s => s.session_number) || []);
+    // Extract session numbers from completed sessions
+    const completedSet = new Set(
+        completedSessions
+            ?.map(s => (s.sessions as any)?.session_number)
+            .filter(Boolean) || []
+    );
 
     // Add completion status to sessions
     return sessions.map(session => ({

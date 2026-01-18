@@ -86,7 +86,7 @@ export default function XPDisplay({
             <div className="flex items-center gap-5">
                 {/* Level Badge */}
                 <div className="relative shrink-0">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 flex flex-col items-center justify-center shadow-lg shadow-violet-500/30 border border-violet-400/30">
+                    <div className="w-20 h-20 rounded-2xl flex flex-col items-center justify-center shadow-lg border" style={{ background: 'linear-gradient(135deg, #1a9ba8 0%, #15868f 100%)', boxShadow: '0 8px 16px rgba(26, 155, 168, 0.3)', borderColor: 'rgba(26, 155, 168, 0.5)' }}>
                         <span className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Level</span>
                         <span className="text-white font-bold text-3xl leading-none mb-1">{level}</span>
                     </div>
@@ -130,7 +130,7 @@ export default function XPDisplay({
                             Total: {displayXP.toLocaleString()} XP
                         </span>
                         {nextRank && (
-                            <span className="text-xs text-violet-400">
+                            <span className="text-xs" style={{ color: '#1a9ba8' }}>
                                 Next Rank: {nextRank.title} (Lv {nextRank.level})
                             </span>
                         )}

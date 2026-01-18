@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import "./globals.css";
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import BottomNav from '@/components/layout/BottomNav';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -31,8 +32,9 @@ export default function RootLayout({
       <body className="antialiased min-h-screen bg-grid">
         <ErrorBoundary>
           <AuthProvider>
-            <div className="bg-radial min-h-screen">
+            <div className="bg-radial min-h-screen pb-24">
               {children}
+              <BottomNav />
             </div>
           </AuthProvider>
         </ErrorBoundary>
