@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import ProgressBar from '@/components/ui/ProgressBar';
 import XPDisplay from '@/components/game/XPDisplay';
+import PronunciationButton from '@/components/ui/PronunciationButton';
 import { type ReviewWord } from '@/lib/types';
 import { QUALITY_MAP, type QualityButton } from '@/lib/sm2';
 
@@ -207,6 +208,16 @@ export default function ReviewPage() {
                         <>
                             {/* Definition */}
                             <div className="mb-8 p-6 bg-gray-800/50 rounded-xl space-y-6">
+                                {/* Audio Pronunciation - Auto play when answer shown */}
+                                <div className="flex justify-center mb-4">
+                                    <PronunciationButton
+                                        word={currentWord.term}
+                                        phonetic={currentWord.pronunciation}
+                                        autoPlay={true}
+                                        className="scale-125"
+                                    />
+                                </div>
+
                                 {currentWord.imageUrl && (
                                     <div className="rounded-lg overflow-hidden shadow-lg border border-white/10 mx-auto max-w-sm">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}

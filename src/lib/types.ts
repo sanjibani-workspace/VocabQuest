@@ -155,6 +155,7 @@ export interface ReviewWord {
     imageUrl?: string;
     etymology?: string;
     rootWords?: string[];
+    pronunciation?: string;
     wordState: DbUserWordState;
 }
 

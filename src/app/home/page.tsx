@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { getUserStats } from '@/app/actions/user';
 import { getNextSession } from '@/app/actions/quest';
 import { getStreakData } from '@/app/actions/streak';
@@ -7,6 +8,7 @@ import { getReviewStats } from '@/app/actions/review';
 import JourneyTimeline from '@/components/journey/JourneyTimeline';
 import CharacterEvolution from '@/components/game/CharacterEvolution';
 import ReviewNudge from '@/components/home/ReviewNudge';
+import GuestProgressSync from '@/components/home/GuestProgressSync';
 
 export default async function HomePage() {
     // Parallelize page load data fetching
@@ -113,6 +115,11 @@ export default async function HomePage() {
                     </div>
                 </div>
             </header>
+
+            {/* Guest Progress Sync - handles localStorage sync after signup */}
+            <Suspense fallback={null}>
+                <GuestProgressSync />
+            </Suspense>
 
             {/* Review Nudge */}
             <ReviewNudge dueCount={reviewStats.dueCount} />

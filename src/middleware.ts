@@ -37,16 +37,8 @@ export async function middleware(request: NextRequest) {
 
     const path = request.nextUrl.pathname;
 
-    // Auth Guard
-    if (!user && (
-        path.startsWith('/home') ||
-        path.startsWith('/quest') ||
-        path.startsWith('/review') ||
-        path.startsWith('/library') ||
-        path === '/'
-    )) {
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
+    // Allow /quest/1 for guest trial flow (new users can try before signing up)
+    const isGuestTrialRoute = path === '/quest/1';
 
     // Login Redirect (If already logged in, go to home)
     if (user && path === '/login') {
@@ -56,6 +48,21 @@ export async function middleware(request: NextRequest) {
     // Default: If root and logged in -> home
     if (user && path === '/') {
         return NextResponse.redirect(new URL('/home', request.url));
+    }
+
+    // Default: If root and NOT logged in -> quest/1 (Guest Trial)
+    if (!user && path === '/') {
+        return NextResponse.redirect(new URL('/quest/1', request.url));
+    }
+
+    // Auth Guard
+    if (!user && !isGuestTrialRoute && (
+        path.startsWith('/home') ||
+        path.startsWith('/quest') ||
+        path.startsWith('/review') ||
+        path.startsWith('/library')
+    )) {
+        return NextResponse.redirect(new URL('/login', request.url));
     }
 
     return supabaseResponse;
