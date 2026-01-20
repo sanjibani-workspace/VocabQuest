@@ -3,16 +3,19 @@ import { getUserStats } from '@/app/actions/user';
 import { getNextSession } from '@/app/actions/quest';
 import { getStreakData } from '@/app/actions/streak';
 import { getAllSessionsProgress } from '@/app/actions/sessions';
+import { getReviewStats } from '@/app/actions/review';
 import JourneyTimeline from '@/components/journey/JourneyTimeline';
 import CharacterEvolution from '@/components/game/CharacterEvolution';
+import ReviewNudge from '@/components/home/ReviewNudge';
 
 export default async function HomePage() {
     // Parallelize page load data fetching
-    const [stats, nextSession, streakData, sessions] = await Promise.all([
+    const [stats, nextSession, streakData, sessions, reviewStats] = await Promise.all([
         getUserStats(),
         getNextSession(),
         getStreakData(),
-        getAllSessionsProgress()
+        getAllSessionsProgress(),
+        getReviewStats()
     ]);
 
     return (
@@ -110,6 +113,9 @@ export default async function HomePage() {
                     </div>
                 </div>
             </header>
+
+            {/* Review Nudge */}
+            <ReviewNudge dueCount={reviewStats.dueCount} />
 
             {/* Journey Timeline */}
             <JourneyTimeline

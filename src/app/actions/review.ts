@@ -12,6 +12,7 @@ import path from 'path';
 import { updateXP } from './user';
 import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import { recordActivity } from './streak';
 
 // Helper to read local book data 
 async function getLocalBookData(): Promise<BookData> {
@@ -90,7 +91,8 @@ export async function getDueWords(limit: number = 20): Promise<ReviewWord[]> {
  */
 export async function submitReview(
     wordId: string,
-    quality: Quality
+    quality: Quality,
+    clientDate?: string
 ): Promise<{
     newState: DbUserWordState;
     xpGained: number;
@@ -145,6 +147,10 @@ export async function submitReview(
     const profile = await updateXP(xpGained);
 
     logger.info('review.submitReview', 'Review submitted', { userId: user.id, wordId, quality, xpGained });
+
+    // Record activity (fire and forget or await - await is safer for critical streak data)
+    // We pass clientDate if available to ensure streak matches user timezone
+    await recordActivity('review', clientDate);
 
     return {
         newState: {

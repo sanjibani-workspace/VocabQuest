@@ -114,10 +114,14 @@ export default function QuestPage({ params }: QuestPageProps) {
         setXpTotal(prev => prev + estimatedBonusXP);
         setIsComplete(true);
 
+        // Calculate local date (YYYY-MM-DD) to ensure streak counts for user's day
+        const now = new Date();
+        const localDate = now.toLocaleDateString('en-CA'); // Outputs YYYY-MM-DD in local time
+
         // Background sync: Complete the quest and record activity in parallel
         Promise.all([
             completeQuest(session.id),
-            recordActivity('session')
+            recordActivity('session', localDate)
         ]).then(([questResult]) => {
             // Reconcile with server values if needed
             if (questResult) {

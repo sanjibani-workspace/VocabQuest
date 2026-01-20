@@ -53,7 +53,10 @@ export default function ReviewPage() {
         const word = words[currentIndex];
 
         try {
-            const result = await submitReview(word.wordId, QUALITY_MAP[quality]);
+            // Calculate local date (YYYY-MM-DD)
+            const localDate = new Date().toLocaleDateString('en-CA');
+            const result = await submitReview(word.wordId, QUALITY_MAP[quality], localDate);
+
             setXpTotal(result.newXpTotal);
             setXpGained(result.xpGained);
             setLevel(Math.floor(result.newXpTotal / 500) + 1);

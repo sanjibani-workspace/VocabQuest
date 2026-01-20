@@ -43,14 +43,17 @@ export async function getStreakData(): Promise<StreakData | null> {
  * Returns milestone reward if user just hit one
  */
 export async function recordActivity(
-    type: 'session' | 'review'
+    type: 'session' | 'review',
+    clientDate?: string
 ): Promise<{ streak: StreakData; milestone?: MilestoneReward } | null> {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return null;
 
-    const today = new Date().toISOString().split('T')[0];
+    // Use client date if provided (YYYY-MM-DD), otherwise fallback to server UTC (dangerous for streaks)
+    // We prefer client date to match user's wall clock time
+    const today = clientDate || new Date().toISOString().split('T')[0];
 
     // 1. Update daily activity log
     const { data: existingActivity } = await supabase
