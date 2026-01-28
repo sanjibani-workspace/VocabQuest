@@ -37,8 +37,8 @@ export async function middleware(request: NextRequest) {
 
     const path = request.nextUrl.pathname;
 
-    // Allow /quest/1 for guest trial flow (new users can try before signing up)
-    const isGuestTrialRoute = path === '/quest/1';
+    // Allow /quest/* and /library for guest trial flow (new users can try before signing up)
+    const isGuestTrialRoute = path.startsWith('/quest/') || path === '/library';
 
     // Login Redirect (If already logged in, go to home)
     if (user && path === '/login') {
