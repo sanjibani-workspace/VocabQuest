@@ -16,6 +16,7 @@ A gamified vocabulary learning app with daily streaks, character evolution, and 
 
 ## ✨ Features
 
+
 - 🎮 **Gamified Quests**: Learn vocabulary through interactive sessions with XP and leveling
 - 🔥 **Daily Streaks**: Build consistency with Duolingo-style daily streak tracking
 - 🌱 **Character Evolution**: Watch your character grow from Seed to Blossom as you maintain streaks
